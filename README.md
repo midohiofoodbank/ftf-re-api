@@ -33,6 +33,9 @@
     - Click Add Account
     - Give your user a name and password
     - Assign Administrative Roles and Schema Privileges
+    - ![alt text](https://miro.medium.com/max/875/1*02UwfaPiNr8mWqSqb3akdg.png)
+    
+    *If you press on the DBA checkmark it should check all of them, and you're good to go*
 5. Create a .env file inside 'ftf-re-api/reporting_engine/'
      - Add these lines to the file:
      ```
