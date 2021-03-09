@@ -58,32 +58,35 @@ class Data_Service:
 
         query = """SELECT fs.research_service_key, fs.{left1}, fs.service_status, fs.service_id,
         fs.research_family_key, fs.served_children, fs.served_adults, fs.served_seniors, fs.served_total, fsm.research_member_key
-        FROM fact_services AS fs
-        LEFT JOIN {t1} AS t1 ON fs.{left1} = t1.{right1}
-        LEFT JOIN dim_service_statuses ON fs.service_status = dim_service_statuses.status 
-        LEFT JOIN fact_service_members AS fsm ON fs.research_service_key = fsm.research_service_key
+        FROM dm_fact_services AS fs
+        LEFT JOIN dm_fact_service_members AS fsm ON fs.research_service_key = fsm.research_service_key
+        WHERE fs.service_status = 17
         """
-        where_stmt = "WHERE fs.service_status = 17"
-        where_stmt += (" AND t1.{} = {}".format(params["Scope"]["scope_field"],
-                                    params["Scope"]["scope_field_value"]) )
 
         start_date = cls.__date_str_to_int(params["Scope"]["startDate"])
         end_date = cls.__date_str_to_int(params["Scope"]["endDate"])
         where_date = " AND fs.date >= {} AND fs.date <= {}".format(start_date,end_date)
-        where_stmt += where_date
         
         query = query.format(t1 = table1, left1 = left1, right1 = right1)
-        query += where_stmt
-        
-        ct = params["Scope"].get("control_type_field")
-        ct_value = params["Scope"].get("control_type_value")
+        query += where_date
 
-        query_control = """SELECT id, {} FROM dim_service_types""".format(ct)
+        is_grocery_service = True
+
+        if params["Scope"].get("control_type_field") != "dummy_is_grocery_service":
+            ct = params["Scope"].get("control_type_field")
+            ct_value = params["Scope"].get("control_type_value")
+            query_control = """SELECT id, {} FROM dim_service_types""".format(ct)
+            services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
+            is_grocery_service = False
+        else:
+            query += " AND fs.dummy_is_grocery_service = {}".format(params["Scope"].get("control_type_value"))
 
         services = pd.read_sql(query, conn)
-        service_types = pd.read_sql(query_control, conn)
-        services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
-        services = services.query('{} == {}'.format(ct, ct_value))
+
+        if not is_grocery_service:
+            service_types = pd.read_sql(query_control, conn)
+            services = services.query('{} == {}'.format(ct, ct_value))
+
         return services
 
     @staticmethod

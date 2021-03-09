@@ -1,4 +1,4 @@
-from .services.data_service import Data_Service as ds
+from .services.data_service_dm import Data_Service as ds
 
 BIG_NUM_NAMES = ["services_total", "undup_hh_total", "undup_indv_total", "services_per_uhh_avg"]
 DEFAULT_CTRL = "dummy_is_grocery_service"
