@@ -1,6 +1,5 @@
 from django.test import TestCase
 import transform_layer.calculations as calc
-from transform_layer.services.data_service import Data_Service as ds
 from django.db import connections
 import unittest
 import csv

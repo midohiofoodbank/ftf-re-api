@@ -49,12 +49,9 @@ class Data_Service:
         left1 = right1 = ""
 
         if params["Scope"]["scope_type"] == "hierarchy":
-            table1 = "dim_hierarchies"
-            left1 = right1 = "hierarchy_id"
+            left1 = "hierarchy_id"
         elif params["Scope"]["scope_type"] == "geography":
-            table1 = "dim_geos"
             left1 = "dimgeo_id"
-            right1 = "id"
 
         query = """SELECT fs.research_service_key, fs.{left1}, fs.service_status, fs.service_id,
         fs.research_family_key, fs.served_children, fs.served_adults, fs.served_seniors, fs.served_total, fsm.research_member_key
@@ -62,12 +59,14 @@ class Data_Service:
         LEFT JOIN dm_fact_service_members AS fsm ON fs.research_service_key = fsm.research_service_key
         WHERE fs.service_status = 17
         """
+        query += (" AND fs.{} = {}".format(params["Scope"]["scope_field"],
+                                    params["Scope"]["scope_field_value"]) )
 
         start_date = cls.__date_str_to_int(params["Scope"]["startDate"])
         end_date = cls.__date_str_to_int(params["Scope"]["endDate"])
         where_date = " AND fs.date >= {} AND fs.date <= {}".format(start_date,end_date)
         
-        query = query.format(t1 = table1, left1 = left1, right1 = right1)
+        query = query.format(left1 = left1)
         query += where_date
 
         is_grocery_service = True
@@ -76,7 +75,6 @@ class Data_Service:
             ct = params["Scope"].get("control_type_field")
             ct_value = params["Scope"].get("control_type_value")
             query_control = """SELECT id, {} FROM dim_service_types""".format(ct)
-            services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
             is_grocery_service = False
         else:
             query += " AND fs.dummy_is_grocery_service = {}".format(params["Scope"].get("control_type_value"))
@@ -85,6 +83,7 @@ class Data_Service:
 
         if not is_grocery_service:
             service_types = pd.read_sql(query_control, conn)
+            services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
             services = services.query('{} == {}'.format(ct, ct_value))
 
         return services
