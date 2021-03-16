@@ -225,6 +225,57 @@ class Data_Service:
         services = pd.read_sql(service_query, conn)
         return services
 
+
+    @classmethod
+    def __get_families(cls,params):
+        conn = connections['source_db']
+
+        table1 = ""
+        left1 = right1 = ""
+
+        if params["scope_type"] == "hierarchy":
+            table1 = "dim_hierarchies"
+            left1 = right1 = "hierarchy_id"
+        elif params["scope_type"] == "geography":
+            table1 = "dim_geos"
+            left1 = "dimgeo_id"
+            right1 = "id"
+
+        control_type_field = params["control_type_field"]
+        control_type_value = params["control_type_value"]
+        scope_field = params["scope_field"]
+        scope_value = params["scope_field_value"]
+        start_date = cls.__date_str_to_int(params["startDate"])
+        end_date = cls.__date_str_to_int(params["endDate"])
+
+        query = f"""
+        SELECT
+            COUNT(fs.research_family_key) AS num_visits,
+            fs.research_family_key,
+            fs.served_children,
+            fs.served_adults,
+            fs.served_seniors,
+            fs.served_total,
+            comps.family_composition_type
+        FROM 
+            fact_services AS fs
+            LEFT JOIN {table1} AS t1 ON fs.{left1} = t1.{right1}
+            LEFT JOIN dim_families AS df ON fs.research_family_key = df.research_family_key
+            INNER JOIN dim_family_compositions as comps ON df.family_composition_type = comps.id
+            INNER JOIN dim_service_types as dt ON fs.service_id = dt.id
+        WHERE
+            fs.service_status = 17 AND
+            t1.{scope_field} = {scope_value} AND
+            fs.date >= {start_date} AND fs.date <= {end_date}
+            AND dt.{control_type_field} = {control_type_value}
+        GROUP BY fs.research_family_key
+        """
+
+
+        services = pd.read_sql(query, conn)
+        return services
+
+
     @staticmethod
     def __date_str_to_int(date):
         dt = parser.parse(date,dayfirst = False)
@@ -356,6 +407,15 @@ class Data_Service:
         print(services)
         return Data_Service.age_services(params)
 
+    #TODO better comment
+    ## DataFrame to fulfill Slide 47: family household composition
+    ####    Returns families
+    @staticmethod
+    def __get_family_household_comp(params):
+        conn = connections['source_db']
+        families = Data_Service.__get_families(params)
+        return families
+
     ## error, none
     @staticmethod
     def get_data_def_error(params):
@@ -391,6 +451,7 @@ class Data_Service:
             23: __get_service_summary.__func__,
             24: __get_service_summary.__func__,
             25: __get_service_summary.__func__,
+            47: __get_family_household_comp.__func__,
             67: __get_age_group_count.__func__
         }
 

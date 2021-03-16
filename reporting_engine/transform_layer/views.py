@@ -585,3 +585,33 @@ def get_age_groups(request):
     context = { 'report_output': format_dict(cd.request)}
     print_dict(cd.request)
     return render(request, 'transformapi/get-report.html', context)
+
+
+def get_family_household_comp(request):
+    input_dict = {
+        "Scope": {
+            "startDate":"01/01/2019",
+            "endDate":"12/31/2019",
+            "scope_field":"loc_id",
+            "scope_field_value":1,
+            "control_type_field":"dummy_is_grocery_service",
+            "control_type_value":1,
+            "age_grouping_id":1 # using age_grouping_id to use to subset dim_ages
+        },
+        "ReportInfo": [
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":47,
+                "name": "household_comp",
+                "dataDefType":3
+            }
+        ]
+    }
+
+    cd = CalculationDispatcher(input_dict)
+    cd.run_calculations()
+
+    context = { 'report_output': format_dict(cd.request)}
+    print_dict(cd.request)
+    return render(request, 'transformapi/get-report.html', context)

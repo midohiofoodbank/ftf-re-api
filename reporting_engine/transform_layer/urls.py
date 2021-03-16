@@ -12,5 +12,6 @@ urlpatterns = [
     path('demo1/franklin', views.get_demo1_franklin, name='get-demo1-franklin'),
     path('demo1/typical', views.get_demo1_typical, name='get-demo1-typical'),
     path('get-report-services', views.get_report_services, name='get-report-services'),
-    path('get-age-groups', views.get_age_groups, name='get-age-groups')
+    path('get-age-groups', views.get_age_groups, name='get-age-groups'),
+    path('get-household-comp', views.get_family_household_comp, name = 'get-household-comp')
 ]

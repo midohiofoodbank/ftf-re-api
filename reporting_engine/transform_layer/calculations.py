@@ -248,6 +248,14 @@ def __get_distribution_outlets(id, params):
 def __get_age_group_count(id, params):
     return ds.get_data_for_definition(id,params)
 
+#slide 47
+def __get_family_household_comp(id, params):
+    families = ds.get_data_for_definition(id,params)
+    household_types = families.groupby('family_composition_type').agg(household_comp = ('family_composition_type', 'count'))
+    return household_types.to_json()
+
+# slide
+
 ## Data Defintion Switcher
 # usage:
 #   func = data_calc_function_switcher.get(id)
@@ -278,5 +286,6 @@ data_calc_function_switcher = {
         23: __get_services_summary,
         24: __get_services_category,
         25: __get_distribution_outlets,
-        67: __get_age_group_count
+        67: __get_age_group_count,
+        47: __get_family_household_comp,
     }
