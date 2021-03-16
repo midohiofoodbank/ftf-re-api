@@ -244,6 +244,10 @@ def __get_distribution_outlets(id, params):
     base_services = base_services.sort_values(by = ['sites_visited'], ascending = [True])
     return base_services.to_json()
 
+# slide 67
+def __get_age_group_count(id, params):
+    return ds.get_data_for_definition(id,params)
+
 ## Data Defintion Switcher
 # usage:
 #   func = data_calc_function_switcher.get(id)
@@ -274,4 +278,5 @@ data_calc_function_switcher = {
         23: __get_services_summary,
         24: __get_services_category,
         25: __get_distribution_outlets,
+        67: __get_age_group_count
     }

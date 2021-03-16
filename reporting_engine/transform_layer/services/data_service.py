@@ -48,12 +48,30 @@ class Data_Service:
             cls.__base_services = cls.__get_base_services(params)
         return cls.__base_services
 
+    __age_services:DataFrame = None
+    ## getter and setter for __age_services
+    ##  Columns always in services:
+    ##      research_service_key
+    ##      research_family_key
+    ##      service_id
+    ##      service_name
+    ##      service_category_code
+    ##      service_category_name
+    ##      served_total
+    ##      loc_id
+    @classmethod
+    def age_services(cls,params):
+        if cls.__age_services is None:
+            cls.__age_services = cls.__get_age_services(params)
+        return cls.__age_services
+
     ## returns DataFrame for a specific data definition
     @classmethod
     def get_data_for_definition(cls, id, params):
         if( params != cls.__scope):
             cls.__fact_services = None
             cls.__base_services = None
+            cls.__age_services = None
             cls.__scope = copy.deepcopy(params)
         func = cls.data_def_function_switcher.get(id, cls.get_data_def_error)
         return func(params)
@@ -103,16 +121,13 @@ class Data_Service:
             t1.{scope_field} = {scope_value} AND
             fs.date >= {start_date} AND fs.date <= {end_date}
         """
-        
-        ct = params.get("control_type_field")
-        ct_value = params.get("control_type_value")
 
-        query_control = f"""SELECT id, {ct} FROM dim_service_types"""
+        query_control = f'SELECT id, {control_type_field} FROM dim_service_types'
 
         services = pd.read_sql(query, conn)
         service_types = pd.read_sql(query_control, conn)
         services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
-        services = services.query(f'{ct} == {ct_value}')
+        services = services.query(f'{control_type_field} == {control_type_value}')
         return services
 
     @classmethod
@@ -146,6 +161,69 @@ class Data_Service:
             dm_fs.date >= {start_date} AND dm_fs.date <= {end_date}
         """
         return pd.read_sql(query, conn)
+
+    ## retrieves age_services
+    @classmethod
+    def __get_age_services(cls, params):
+        conn = connections['source_db']
+
+        table1 = ""
+        left1 = right1 = ""
+
+        if params["scope_type"] == "hierarchy":
+            table1 = "dim_hierarchies"
+            left1 = right1 = "hierarchy_id"
+        elif params["scope_type"] == "geography":
+            table1 = "dim_geos"
+            left1 = "dimgeo_id"
+            right1 = "id"
+
+        control_type_field = params["control_type_field"]
+        control_type_value = params["control_type_value"]
+        scope_field = params["scope_field"]
+        scope_value = params["scope_field_value"]
+        start_date = cls.__date_str_to_int(params["startDate"])
+        end_date = cls.__date_str_to_int(params["endDate"])
+        age_grouping_id = params["age_grouping_id"]
+
+        service_query = f"""
+        SELECT
+            fs.research_service_key,
+            fs.{left1},
+            fs.service_status,
+            fs.service_id,
+            fs.research_family_key,
+            fsm.research_member_key,
+            members.current_age,
+            members.gender,
+            ages.age_grouping_id,
+            ages.age_band_name_dash,
+            ages.age,
+            ages.start_age,
+            ages.end_age
+        FROM 
+            fact_services AS fs
+            LEFT JOIN {table1} AS t1 ON fs.{left1} = t1.{right1}
+            LEFT JOIN dim_service_statuses ON fs.service_status = dim_service_statuses.status 
+            LEFT JOIN fact_service_members AS fsm ON fs.research_service_key = fsm.research_service_key
+            LEFT JOIN dim_members AS members ON fsm.research_member_key = members.research_member_key
+            LEFT JOIN dim_ages AS ages ON members.current_age = ages.age
+        WHERE
+            fs.service_status = 17 AND
+            t1.{scope_field} = {scope_value} AND
+            fs.date >= {start_date} AND fs.date <= {end_date} AND
+            ages.age_grouping_id = {age_grouping_id}
+        """
+
+        query_control = f"""SELECT id, {control_type_field} FROM dim_service_types"""
+
+        services = pd.read_sql(service_query, conn)
+        service_types = pd.read_sql(query_control, conn)
+        services = services.merge(service_types, how = 'left', left_on= 'service_id', right_on = 'id')
+        services = services.query(f'{control_type_field} == {control_type_value}')
+
+        services = pd.read_sql(service_query, conn)
+        return services
 
     @staticmethod
     def __date_str_to_int(date):
@@ -270,6 +348,14 @@ class Data_Service:
     def __get_service_summary(params):
         return Data_Service.base_services(params)
 
+    ## DataFrame to fulfill Slide 67
+    ####    Returns age_services
+    @staticmethod
+    def __get_age_group_count(params):
+        services = Data_Service.age_services(params)
+        print(services)
+        return Data_Service.age_services(params)
+
     ## error, none
     @staticmethod
     def get_data_def_error(params):
@@ -305,5 +391,6 @@ class Data_Service:
             23: __get_service_summary.__func__,
             24: __get_service_summary.__func__,
             25: __get_service_summary.__func__,
+            67: __get_age_group_count.__func__
         }
 

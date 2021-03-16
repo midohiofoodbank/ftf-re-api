@@ -555,3 +555,33 @@ def get_report_services(request):
     context = { 'report_output': format_dict(cd.request)}
     print_dict(cd.request)
     return render(request, 'transformapi/get-report.html', context)
+
+
+def get_age_groups(request):
+    input_dict = {
+        "Scope": {
+            "startDate":"01/01/2020",
+            "endDate":"01/31/2020",
+            "scope_field":"fb_id",
+            "scope_field_value":21,
+            "control_type_field":"dummy_is_grocery_service",
+            "control_type_value":1,
+            "age_grouping_id":1 # using age_grouping_id to use to subset dim_ages
+        },
+        "ReportInfo": [
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":67,
+                "name": "age_group_count",
+                "dataDefType":3
+            }
+        ]
+    }
+
+    cd = CalculationDispatcher(input_dict)
+    cd.run_calculations()
+
+    context = { 'report_output': format_dict(cd.request)}
+    print_dict(cd.request)
+    return render(request, 'transformapi/get-report.html', context)
