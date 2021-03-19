@@ -28,6 +28,30 @@ def periodic_report_generation(recurrence):
     		if(schedule.timeframe_type.recurrence == recurrence):
     				generate_report_and_save(schedule)
 
+### This section of code is written in case celery is unable to pass a parameter as shown in periodic_report_generation. 
+### If we are able to pass the recurrence parameter this will block of code will be obselete.
+### Otherwise, the periodic_report_generation function will be obselete and this block will be used instead.
+# # generates recurring reports if they are monthly
+# @shared_task
+# def periodic_report_generation_monthly():
+# 	for schedule in ReportSchedule.objects.all():
+#     		if(schedule.timeframe_type.recurrence == "monthly"):
+#     				generate_report_and_save(schedule)
+
+# # generates recurring reports if they are weekly
+# @shared_task
+# def periodic_report_generation_weekly():
+# 	for schedule in ReportSchedule.objects.all():
+#     		if(schedule.timeframe_type.recurrence == "weekly"):
+#     				generate_report_and_save(schedule)
+
+# # generates recurring reports if they are daily
+# @shared_task
+# def periodic_report_generation_daily():
+# 	for schedule in ReportSchedule.objects.all():
+#     		if(schedule.timeframe_type.recurrence == "daily"):
+#     				generate_report_and_save(schedule)
+
 # generates (and saves) a one time report if it has been requested
 @shared_task
 def one_time_report_generation(schedule):
