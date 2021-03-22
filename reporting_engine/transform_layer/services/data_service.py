@@ -348,7 +348,7 @@ class Data_Service:
     def __get_service_summary(params):
         return Data_Service.base_services(params)
 
-    ## DataFrame to fulfill Slide 67
+    ## DataFrame to fulfill Slide 67, 73
     ####    Returns age_services
     @staticmethod
     def __get_age_group_count(params):
@@ -391,6 +391,7 @@ class Data_Service:
             23: __get_service_summary.__func__,
             24: __get_service_summary.__func__,
             25: __get_service_summary.__func__,
-            67: __get_age_group_count.__func__
+            67: __get_age_group_count.__func__,
+            73: __get_age_group_count.__func__
         }
 

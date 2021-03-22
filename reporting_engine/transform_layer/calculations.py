@@ -248,6 +248,10 @@ def __get_distribution_outlets(id, params):
 def __get_age_group_count(id, params):
     return ds.get_data_for_definition(id,params)
 
+# slide 73
+def __get_age_groups_at_least_one(id, params):
+    return ds.get_data_for_definition(id,params)
+
 ## Data Defintion Switcher
 # usage:
 #   func = data_calc_function_switcher.get(id)
@@ -278,5 +282,6 @@ data_calc_function_switcher = {
         23: __get_services_summary,
         24: __get_services_category,
         25: __get_distribution_outlets,
-        67: __get_age_group_count
+        67: __get_age_group_count,
+        73: __get_age_groups_at_least_one
     }
