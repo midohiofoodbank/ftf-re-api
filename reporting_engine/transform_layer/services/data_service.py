@@ -426,8 +426,6 @@ class Data_Service:
     ####    Returns age_services
     @staticmethod
     def __get_age_group_count(params):
-        services = Data_Service.age_services(params)
-        print(services)
         return Data_Service.age_services(params)
 
     ## error, none

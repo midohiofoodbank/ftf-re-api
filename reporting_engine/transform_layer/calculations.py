@@ -340,7 +340,22 @@ def __get_household_size_distribution_classic(id, params):
 
 # slide 67
 def __get_age_group_count(id, params):
-    return ds.get_data_for_definition(id,params)
+    """Calculate number of people served DataDef TBD (age group count)
+
+    Arguments:
+    id - data definiton id
+    params - a dictionary of values to scope the queries
+
+    Modifies:
+    Nothing
+
+    Returns: age_group_count
+    age_group_count - number of people served, filtered by age groups
+
+    """
+    data = ds.get_data_for_definition(id,params).groupby(['age_band_name_dash'])
+    data = data.agg({'service_id': 'count'}).reset_index().rename(columns={'service_id':'Served'})
+    return data.to_json()
 
 # slide 73
 def __get_age_groups_at_least_one(id, params):
