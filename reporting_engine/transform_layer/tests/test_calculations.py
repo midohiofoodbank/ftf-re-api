@@ -2,6 +2,8 @@ from django.test import TestCase
 import transform_layer.calculations as calc
 from transform_layer.services.data_service import Data_Service as ds
 from django.db import connections
+import pandas
+
 import unittest
 import csv
 import os 
@@ -15,8 +17,7 @@ sample_scope_1 = {
     "scope_type": "hierarchy",
     "scope_field":"fb_id",
     "scope_field_value":21,
-    "control_type_field":"dummy_is_grocery_service",
-    "control_type_value":1
+    "control_type_name":"Is Grocery Service"
 }
 
 
@@ -26,8 +27,7 @@ sample_scope_2 = {
     "scope_type": "geography",
     "scope_field":"fips_cnty",
     "scope_field_value":39049,
-    "control_type_field":"dummy_is_grocery_service",
-    "control_type_value":1
+    "control_type_name":"Is Grocery Service"
 }
 
 base_services_scope = {
@@ -36,8 +36,7 @@ base_services_scope = {
     "scope_type": "hierarchy",
     "scope_field":"fb_id",
     "scope_field_value":21,
-    "control_type_field":"dummy_is_grocery_service",
-    "control_type_value":1
+    "control_type_name":"Is Grocery Service"
 }
 
 json_test_results = {
@@ -52,15 +51,14 @@ json_test_results = {
         'day","33":"Pantry - Prepack - 9 day","34":"Pantry - Prepack\\/Choice - 3 day","35":"Pantry - Prepack\\/Choice - 4 day","36":"Pantry - Prepack\\/Choice - 5 '
         'day","37":"Pantry - Special Dietary Needs - 3 day","38":"Prepack - Perishables only","39":"Produce & Protein","40":"Produce \\/ Mobile Market","41":"Produce '
         'Market","42":"Rx - Produce","43":"Snack Bag","44":"Special - Perishables only","45":"TEFAP"},"Families '
-        'Served":{"0":173,"1":6149,"2":73,"3":599,"4":4,"5":239,"6":497,"7":190,"8":368,"9":13373,"10":2173,"11":1,"12":1773,"13":29457,"14":1545,"15":1332,"16":2197,"17":65336,"18":303571,"19":35831,"20":59866,"21":6790,"22":16919,"23":2049,"24":1048,"25":3444,"26":97550,"27":2,"28":11237,"29":28965,"30":2338,"31":98123,"32":5,"33":1878,"34":596,"35":66,"36":865,"37":1,"38":5473,"39":27111,"40":191074,"41":120216,"42":1440,"43":381,"44":25638,"45":4},"People '
-        'Served":{"0":750,"1":11712,"2":272,"3":1482,"4":9,"5":895,"6":1268,"7":616,"8":1537,"9":47112,"10":3084,"11":5,"12":4765,"13":79062,"14":2309,"15":3479,"16":5849,"17":227452,"18":965629,"19":115220,"20":190225,"21":21308,"22":59012,"23":6062,"24":2649,"25":8215,"26":290223,"27":9,"28":36120,"29":105112,"30":7995,"31":340291,"32":14,"33":5996,"34":1601,"35":199,"36":2386,"37":4,"38":19428,"39":95428,"40":546296,"41":370530,"42":4833,"43":689,"44":84918,"45":19}}',
-        '{"service_category_name":{"0":"CSFP","1":"Choice Pantry","2":"Prepack Pantry","3":"Produce"},"Families ''Served":{"0":6149,"1":553053,"2":264917,"3":343841},"People '
-        'Served":{"0":11712,"1":1773688,"2":860664,"3":1026005}}',
+        'Served":{"0":173,"1":6149,"2":73,"3":599,"4":4,"5":239,"6":497,"7":190,"8":368,"9":13373,"10":2173,"11":1,"12":1773,"13":29458,"14":1545,"15":1332,"16":2197,"17":65336,"18":303571,"19":35831,"20":59866,"21":6790,"22":16919,"23":2049,"24":1048,"25":3444,"26":97550,"27":2,"28":11237,"29":28965,"30":2338,"31":98123,"32":5,"33":1878,"34":596,"35":66,"36":865,"37":1,"38":5473,"39":27111,"40":191074,"41":120216,"42":1440,"43":381,"44":25638,"45":4},"People '
+        'Served":{"0":750,"1":11712,"2":272,"3":1482,"4":9,"5":895,"6":1268,"7":616,"8":1537,"9":47112,"10":3084,"11":5,"12":4765,"13":79066,"14":2309,"15":3479,"16":5849,"17":227452,"18":965629,"19":115220,"20":190225,"21":21308,"22":59012,"23":6062,"24":2649,"25":8215,"26":290223,"27":9,"28":36120,"29":105112,"30":7995,"31":340291,"32":14,"33":5996,"34":1601,"35":199,"36":2386,"37":4,"38":19428,"39":95428,"40":546296,"41":370530,"42":4833,"43":689,"44":84918,"45":19}}',
+        '{"service_category_name":{"0":"CSFP","1":"Choice Pantry","2":"Prepack Pantry","3":"Produce"},"Families ''Served":{"0":6149,"1":553054,"2":264917,"3":343841},"People '
+        'Served":{"0":11712,"1":1773692,"2":860664,"3":1026005}}',
         '{"sites_visited":{"0":1,"1":2,"2":3,"3":4,"4":5,"5":6,"6":7,"7":8,"8":9,"9":10,"10":11,"11":12,"12":13,"13":14,"14":15,"15":16,"16":17,"17":18,"18":19,"19":20,"20":22,"21":23,"22":24,"23":28,"24":29},"un_duplicated_families":{"0":132981,"1":37029,"2":14403,"3":6363,"4":3072,"5":1646,"6":939,"7":489,"8":313,"9":201,"10":125,"11":79,"12":53,"13":35,"14":31,"15":22,"16":11,"17":7,"18":2,"19":5,"20":2,"21":4,"22":2,"23":1,"24":1}}'],
 }
 
-
-
+#reads int_test_results.csv and returns a dictionary of expected test results for data definitions 1-22.
 def read_expected_int():
     expected = {}
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -91,12 +89,7 @@ EXPECTED_JSON_RESULTS = read_expected_json()
 
 
 class CalculationsTestCase(unittest.TestCase):
-    # @classmethod
-    # def setUpClass(cls):
-    #     cls.fact_services_scope1 = ds.fact_services(sample_scope_2)
-    #     #ds.__fact_services = None
-    #     #cls.fact_services_scope2 = ds.fact_services(sample_scope_2)
-    #     #ds.__fact_services = None
+    
 
     
     def test_get_services_total(self):
@@ -219,18 +212,114 @@ class CalculationsTestCase(unittest.TestCase):
     def test_get_services_summary(self):
         func = calc.data_calc_function_switcher[23]
         result = func(23, base_services_scope)
+        self.maxDiff = None
         self.assertEqual(json.loads(result), json.loads(EXPECTED_JSON_RESULTS["service_summary_service"]["mofc_value"]))
         
     def test_get_services_category(self):
         func = calc.data_calc_function_switcher[24]
         result = func(24, base_services_scope)
+        self.maxDiff = None
         self.assertEqual(json.loads(result), json.loads(EXPECTED_JSON_RESULTS["service_category_service"]["mofc_value"]))
 
     def test_get_distribution_outlets(self):
         func = calc.data_calc_function_switcher[25]
         result = func(25, base_services_scope)
+        self.maxDiff = None
         self.assertEqual(json.loads(result), json.loads(EXPECTED_JSON_RESULTS["distribution_outlets"]["mofc_value"]))
+    
+    def test_get_frequency_visits(self):
+        expected = {
+            "n_families": {
+                "1":75530,"2":29221,"3":17037,"4":11730,"5":8713,"6":6931,"7":5698,"8":4898,"9":4115,"10":3470,"11":3181,"12":2867,"13":2342,"14":1889,
+                "15":1691,"16":1554,"17":1339,"18":1244,"19":1101,"20":1021,"21":921,"22":797,"23":747,"24":694,"25":8863
+            },
+            "sum_services" :{
+                "1":75530,"2":58442,"3":51111,"4":46920,"5":43565,"6":41586,"7":39886,"8":39184,"9":37035,"10":34700,"11":34991,"12":34404,"13":30446,
+                "14":26446,"15":25365,"16":24864,"17":22763,"18":22392,"19":20919,"20":20420,"21":19341,"22":17534,"23":17181,"24":16656,"25":366004
+            }
+        }
+        func = calc.data_calc_function_switcher[26]
+        result = func(26, base_services_scope)
+        resultDict = json.loads(result)
+        self.assertDictEqual(resultDict, expected)
+
         
+    def test_get_household_composition(self):
+        expected = {
+            "family_composition_type": {
+                "0":"adults_and_children",
+                "1":"adults_and_seniors",
+                "2":"adults_only",
+                "3":"adults_seniors_and_children",
+                "4":"children_and_seniors",
+                "5":"children_only",
+                "6":"seniors_only"
+                },
+            "num_families":
+            {
+                "0":74123,
+                "1":17882,
+                "2":58365,
+                "3":13913,
+                "4":2492,
+                "5":434,
+                "6":30385
+            }
+        }
+        func = calc.data_calc_function_switcher[28]
+        result = func(28, base_services_scope)
+        resultDict = json.loads(result)
+        self.assertDictEqual(resultDict, expected)
+
+    def test_get_family_comp_key_insight(self):
+
+        # expected = {
+        #     "family_composition_type": ["has_child_senior"," no_child_senior"],
+        #     "num_families": [139229, 58365]
+        # }
+        expected = {
+            "family_composition_type": {
+                "0":"has_child_senior",
+                "1":"no_child_senior"
+                },
+            "num_families":
+            {
+                "0":139229,
+                "1":58365,
+            }
+        }
+        func = calc.data_calc_function_switcher[29]
+        result = func(29, base_services_scope)
+        resultDict = json.loads(result)
+        self.assertDictEqual(resultDict, expected)
+
+    def test_get_household_size_distribution_1_to_10(self):
+        expected = {
+            "avg_fam_size_roll": {
+                "0": 1.0, "1": 2.0, "2": 3.0, "3": 4.0, "4": 5.0, "5": 6.0, "6": 7.0, "7": 8.0, "8": 9.0, "9": 10.0
+            },
+            "num_families":{
+                "0": 56174, "1": 38967, "2": 29398, "3": 28081, "4": 20341, "5": 12336, "6": 6103, "7": 3144, "8": 1493, "9": 1557
+            },
+            "classic_roll": {
+                "0": "1 - 3", "1": "1 - 3", "2": "1 - 3", "3": "4 - 6", "4": "4 - 6", "5": "4 - 6", "6": "7+", "7": "7+", "8": "7+", "9": "7+"
+            }
+        }
+        func = calc.data_calc_function_switcher[30]
+        result = func(30, base_services_scope)
+        resultDict = json.loads(result)
+        self.assertDictEqual(resultDict, expected)
+
+    def test_get_household_size_distribution_classic(self):
+        expected = {
+            '1 - 3':124539,
+            '4 - 6':60758,
+            '7+':12297
+        }
+        func = calc.data_calc_function_switcher[31]
+        result = func(31, base_services_scope)
+        resultDict = json.loads(result)
+        self.assertDictEqual(resultDict, expected)
 
 
 if __name__ == '__main__':

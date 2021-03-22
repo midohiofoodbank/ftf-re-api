@@ -462,7 +462,7 @@
     "fields": {
       "name": "service_summary_service",
       "definition_public": "A summary of services by service type. Provides a detailed summary of network output by each type of service.",
-      "calculation_notes": "base services, group by service id, show count of services as duplicated families served, and sum of fact_services.served_total as duplicated people served.",
+      "calculation_notes": "Base services, group by service id, show count of services as duplicated families served, and sum of fact_services.served_total as duplicated people served.",
       "interpretation_notes": "Will not show any variables that have zero observations.",
       "data_definition_type_id": 2
     }
@@ -473,7 +473,7 @@
     "fields": {
       "name": "service_summary_category",
       "definition_public": "A summary of services by service cateogry. This provides a high-level summary of network output.",
-      "calculation_notes": "base services, group by service category name, show count of services as duplicated families served, and sum of fact_services.served_total as duplicated people served.",
+      "calculation_notes": "Base services, group by service category name, show count of services as duplicated families served, and sum of fact_services.served_total as duplicated people served.",
       "interpretation_notes": "Will not show any variables that have zero observations.",
       "data_definition_type_id": 2
     }
@@ -484,8 +484,74 @@
     "fields": {
       "name": "distribution_outlets",
       "definition_public": "A summary of how many sites customers visited during the reporting timeframe.",
-      "calculation_notes": "base services, group by research_family_key, summarise sites visited as a count distinct of loc_id, group by sites visited, summarise unduplicated families as a count of observations.",
+      "calculation_notes": "Base services, group by research_family_key, summarise sites visited as a count distinct of loc_id, group by sites visited, summarise unduplicated families as a count of observations.",
       "interpretation_notes": "Will not show any variables that have zero observations, recommend reporting clients summarize data as 1, 2, 3, 4, and 5+ sites visited.",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 26,
+    "fields": {
+      "name": "fam_frequency_of_visits",
+      "definition_public": "A summary of how many families received how many services in the timeframe.",
+      "calculation_notes": "Base families, group by number of services, show count of unduplicated families in each group. Cap output at 25+.",
+      "interpretation_notes": "The general insight is that grocery service data shows a large number of families receiving a few services, and a few families receiving large services. This trend has been shown across states, foodbanks, counties, and agencies for any annual timeframe.",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 27,
+    "fields": {
+      "name": "fam_service_distribution",
+      "definition_public": "A summary of how many total services were received by families in the timeframe.",
+      "calculation_notes": "Base families, group by number of services, show sum of services received (unduplicated families * services) in each group. Cap output at 25+.",
+      "interpretation_notes": "The general insight is that families who receive more services are fewer in number, and . E.g. if 3500 families receive 10 services each, the 10 group received 35000 services. This is likely fewer services received total than all the families who received 1 service, 2 services,etc...",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 28,
+    "fields": {
+      "name": "fam_household_composition",
+      "definition_public": "Provides an unduplicated 7 category breakdown of family composition.",
+      "calculation_notes": "Base families, group by family_composition_type, summarise unduplicated count of families.",
+      "interpretation_notes": "A family household composition is derived from their most frequent household composition in ALL services received, not just the ones from the reporting timeframe.",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 29,
+    "fields": {
+      "name": "fam_family_composition_key_insight",
+      "definition_public": "Provides a high-level statistic about how many families contained at least one child and one senior.",
+      "calculation_notes": "Base families, group by family_composition_type, summarise unduplicated count of families, group again by has_child_senior, summarise unduplicated count of families.",
+      "interpretation_notes": "This is a powerful statistic and shows grocery services benefit many types of families, and most of them have at least one senior or child.",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 30,
+    "fields": {
+      "name": "fam_household_size_distribution_1_10",
+      "definition_public": "Provides a summary of family size, 1 - 10+",
+      "calculation_notes": "Base families, round average family size, bring up any family size <1 to 1, group by family_size, summarise unduplicated count of families. Cap output at 10+.",
+      "interpretation_notes": "One of the original myths about grocery services was that all families were large. The typical result of this data is that the majority of families are in line with the average demographics in their area.",
+      "data_definition_type_id": 2
+    }
+  },
+  {
+    "model": "api.DataDefinition",
+    "pk": 31,
+    "fields": {
+      "name": "fam_household_size_distribution_classic",
+      "definition_public": "Provides a summary of family size, 1 - 3, 4 - 6, 7+",
+      "calculation_notes": "Base families, round average family size, bring up any family size <1 to 1, group by family_size, summarise unduplicated count of families, summarise output at classic levels",
+      "interpretation_notes": "One of the original myths about grocery services was that all families were large. The typical result of this data is that the majority of families are in line with the average demographics in their area. This is the classical breakdown of family size.",
       "data_definition_type_id": 2
     }
   },
@@ -721,6 +787,60 @@
       "report_dictionary_id": 1,
       "data_definition_id": 25,
       "section_id": 2
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 26,
+      "section_id": 3
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 27,
+      "section_id": 3
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 28,
+      "section_id": 3
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 29,
+      "section_id": 3
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 30,
+      "section_id": 3
+    }
+  },
+  {
+    "model": "api.ReportingDictionaryDefinition",
+    "pk": 27,
+    "fields": {
+      "report_dictionary_id": 1,
+      "data_definition_id": 31,
+      "section_id": 3
     }
   },
   {

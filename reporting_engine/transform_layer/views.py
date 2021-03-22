@@ -1,71 +1,14 @@
+import time
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.db import connections
-from .calculations import CalculationDispatcher
-from .services.data_service import Data_Service
-from . import calculations as calc
-from .calculations import CalculationDispatcher
 from print_dict import print_dict, format_dict
 
-def test_endpoint_2(request):
-    sample_dict = {
-        "Scope": {
-            "startDate":"01/01/2019",
-            "endDate":"12/31/2019",
-            "scope_field":"fb_id",
-            "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
-        },
-        "ReportInfo": [
-            {
-                "reportId":1,
-                "reportDictId":1,
-                "dataDefId":1,
-                "name":"services_total",
-                "dataDefType":"type1"
-            },
-            {
-                "reportId":1,
-                "reportDictId":1,
-                "dataDefId":2,
-                "name":"undup_hh_total",
-                "dataDefType":"type1"
-            },
-            {
-                "reportId":1,
-                "reportDictId":1,
-                "dataDefId":3,
-                "name":"undup_indv_total",
-                "dataDefType":"type1"
-            },
-            {
-                "reportId":1,
-                "reportDictId":1,
-                "dataDefId":4,
-                "name":"services_per_uhh_avg",
-                "dataDefType":"type1"
-            },
-            {
-                "reportId":3,
-                "reportDictId":3,
-                "dataDefId":3,
-                "name":"name_three",
-                "dataDefType":"type1"
-            }
-        ]
-    }
-    params = CalculationDispatcher.parse_request(sample_dict)
-    num_services = calc.__get_services_total(params)
-    num_families = calc.__get_undup_hh_total(params)
+from .calculations import CalculationDispatcher
+from .services.data_service import Data_Service
 
-    response = "Number of unduplicated services " + str(num_services)
-    response += "\n"
-    response += "Number of unduplicated families " + str(num_families)
-    
-    print(response)
-    return HttpResponse(response)
+
 
 def test_data_service(request, id):
     sample_dict = {
@@ -74,8 +17,7 @@ def test_data_service(request, id):
             "endDate":"1/31/2019",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
@@ -102,6 +44,7 @@ def test_data_service(request, id):
         ]
     }
     params = CalculationDispatcher.parse_request(sample_dict)
+    print_dict(params)
 
     data = Data_Service.get_data_for_definition(id, params)
     print(data)
@@ -114,8 +57,7 @@ def get_report_big_numbers(request):
             "endDate":"12/31/2019",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
@@ -164,8 +106,7 @@ def get_report_ohio(request):
             "endDate":"12/31/2019",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
@@ -291,8 +232,7 @@ def get_report_mofc(request):
             "endDate":"12/31/2019",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
@@ -334,8 +274,7 @@ def get_demo1_mofc(request):
             "endDate":"12/31/2019",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": []
     }
@@ -396,8 +335,7 @@ def get_demo1_franklin(request):
             "scope_type": "geography",
             "scope_field":"fips_cnty",
             "scope_field_value":39049,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": []
     }
@@ -452,15 +390,14 @@ def get_demo1_franklin(request):
 
 
 
-def get_demo1_typical(request):
+def get_all_defs_typical(request):
     input_dict = {
         "Scope": {
             "startDate":"01/01/2019",
             "endDate":"12/31/2019",
             "scope_field":"loc_id",
             "scope_field_value":1,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": []
     }
@@ -490,7 +427,13 @@ def get_demo1_typical(request):
         "hh_grandparent",
         "service_summary_service",
         "service_summary_category",
-        "distribution_outlets"
+        "distribution_outlets",
+        "fam_frequency_of_visits",
+        "fam_service_distribution",
+        "fam_household_composition",
+        "fam_family_composition_key_insight",
+        "fam_household_size_distribution_1_10",
+        "fam_household_size_distribution_classic"
     ]
     num_defs = len(Data_Service.data_def_function_switcher)
     for i in range(1, num_defs + 1):
@@ -504,12 +447,13 @@ def get_demo1_typical(request):
         input_dict["ReportInfo"].append(data_def)
     
 
-    # params = parse_request(input_dict)
+    start_time = time.time()
     cd = CalculationDispatcher(input_dict)
     cd.run_calculations()
 
     context = { 'report_output': format_dict(cd.request)}
     print_dict(input_dict)
+    print(str(time.time() - start_time), ' seconds to run all queries')
     return render(request, 'transformapi/get-report.html', context)
 
 
@@ -520,8 +464,7 @@ def get_report_services(request):
             "endDate":"12/31/2020",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
@@ -556,24 +499,49 @@ def get_report_services(request):
     print_dict(cd.request)
     return render(request, 'transformapi/get-report.html', context)
 
-
-def get_age_groups(request):
+def get_family_breakdown(request):
     input_dict = {
         "Scope": {
             "startDate":"01/01/2020",
-            "endDate":"01/31/2020",
+            "endDate":"12/31/2020",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1,
-            "age_grouping_id":1 # using age_grouping_id to use to subset dim_ages
+            "control_type_name":"Is Grocery Service"
         },
         "ReportInfo": [
             {
                 "reportId":1,
                 "reportDictId":1,
-                "dataDefId":67,
-                "name": "age_group_count",
+                "dataDefId":26,
+                "name": "frequency_visits",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":28,
+                "name": "household_composition",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":29,
+                "name": "family_composition_key_insight",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":30,
+                "name": "household_size_distribution_1_to_10",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":31,
+                "name": "household_composition",
                 "dataDefType":3
             }
         ]
@@ -586,31 +554,101 @@ def get_age_groups(request):
     print_dict(cd.request)
     return render(request, 'transformapi/get-report.html', context)
 
-def get_age_groups_at_least_one(request):
+def test_data_def_3_large(request):
+    input_dict = {
+        "Scope": {
+            "startDate":"01/01/2019",
+            "endDate":"12/31/2019",
+            "scope_field":"fb_id",
+            "scope_field_value":21,
+            "control_type_name":"Is Grocery Service",
+            "control_type_value":1
+        },
+        "ReportInfo": [
+            {
+                "reportId":3,
+                "reportDictId":3,
+                "dataDefId":3,
+                "name":"undup_indv_total",
+                "dataDefType":"type1"
+            }
+        ]
+    }
+
+    # params = parse_request(input_dict)
+    start_time = time.time()
+    cd = CalculationDispatcher(input_dict)
+    cd.run_calculations()
+
+    context = { 'report_output': format_dict(cd.request)}
+    print_dict(input_dict)
+    print(str(time.time() - start_time), ' seconds to run query')
+    return render(request, 'transformapi/get-report.html', context)
+
+def test_data_def_3_typical(request):
+    input_dict = {
+        "Scope": {
+            "startDate":"01/01/2019",
+            "endDate":"12/31/2019",
+            "scope_field":"loc_id",
+            "scope_field_value":1,
+            "control_type_name":"Is Grocery Service"
+        },
+        "ReportInfo": [
+            {
+                "reportId":3,
+                "reportDictId":3,
+                "dataDefId":3,
+                "name":"undup_indv_total",
+                "dataDefType":"type1"
+            }
+        ]
+    }
+
+    # params = parse_request(input_dict)
+    start_time = time.time()
+    cd = CalculationDispatcher(input_dict)
+    cd.run_calculations()
+
+    context = { 'report_output': format_dict(cd.request)}
+    print_dict(input_dict)
+    print(str(time.time() - start_time), ' seconds to run query')
+    return render(request, 'transformapi/get-report.html', context)
+
+
+def get_age_groups(request):
     input_dict = {
         "Scope": {
             "startDate":"01/01/2020",
             "endDate":"01/31/2020",
             "scope_field":"fb_id",
             "scope_field_value":21,
-            "control_type_field":"dummy_is_grocery_service",
-            "control_type_value":1,
+            "control_type_name":"Is Grocery Service",
             "age_grouping_id":1 # using age_grouping_id to use to subset dim_ages
         },
         "ReportInfo": [
             {
                 "reportId":1,
                 "reportDictId":1,
-                "dataDefId":73,
+                "dataDefId":67,
                 "name": "age_group_count",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":73,
+                "name": "age_groups_at_least_one",
                 "dataDefType":3
             }
         ]
     }
-
+    
+    start_time = time.time()
     cd = CalculationDispatcher(input_dict)
     cd.run_calculations()
 
     context = { 'report_output': format_dict(cd.request)}
-    print_dict(cd.request)
+    print_dict(input_dict)
+    print(str(time.time() - start_time), ' seconds to run query')
     return render(request, 'transformapi/get-report.html', context)
