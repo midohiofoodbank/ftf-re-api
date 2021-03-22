@@ -359,7 +359,7 @@ def __get_age_group_count(id, params):
 
 # slide 73
 def __get_age_groups_at_least_one(id, params):
-    return ds.get_data_for_definition(id,params)
+    return ds.get_data_for_definition(id,params).to_json()
 
 ## Data Defintion Switcher
 # usage:
