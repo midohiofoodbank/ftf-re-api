@@ -643,12 +643,11 @@ def get_age_groups(request):
             }
         ]
     }
-    
+
     start_time = time.time()
     cd = CalculationDispatcher(input_dict)
     cd.run_calculations()
 
     context = { 'report_output': format_dict(cd.request)}
-    print_dict(input_dict)
     print(str(time.time() - start_time), ' seconds to run query')
     return render(request, 'transformapi/get-report.html', context)

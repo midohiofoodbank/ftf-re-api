@@ -224,7 +224,7 @@ class Data_Service:
             LEFT JOIN fact_service_members AS fsm ON fs.research_service_key = fsm.research_service_key
             LEFT JOIN dim_members AS members ON fsm.research_member_key = members.research_member_key
             LEFT JOIN dim_ages AS ages ON members.current_age = ages.age
-            INNER JOIN dim_service_types ON fact_services.service_id = dim_service_types.id
+            INNER JOIN dim_service_types ON fs.service_id = dim_service_types.id
         WHERE
             fs.service_status = 17
             AND {control_query}
