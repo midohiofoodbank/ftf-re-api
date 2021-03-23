@@ -16,6 +16,7 @@ Written by Joy Lin, Nick Biederman, Alli Hornyak, and Emily Robinson
 """
 
 from django.db import models
+import datetime
 
 class TimeframeType(models.Model):
 	"""Defines TimeframeType table (named time_frame_types in mysql database)"""
@@ -50,7 +51,7 @@ class DataDefinition(models.Model):
 	name = models.CharField(max_length = 255, blank = True)
 	definition_public = models.CharField(max_length = 255, blank = True)
 	calculation_notes = models.CharField(max_length = 255, blank = True)
-	interpretation_notes = models.CharField(max_length = 255, blank = True)
+	interpretation_notes = models.CharField(max_length = 300, blank = True)
 	data_definition_type = models.ForeignKey(DataDefinitionType, on_delete = models.CASCADE, null = True, blank = True)
 	class Meta:
 		db_table = 'data_definitions'
@@ -104,22 +105,36 @@ class RunType(models.Model):
 	def __str__(self):
 		return self.name
 
+class ReportScheduleAddin(models.Model):
+	reporting_dictionary = models.ForeignKey(ReportingDictionary, on_delete=models.CASCADE, null = True, blank = True)
+	class Meta:
+		db_table = 'report_schedule_addins'
+	def __str__(self):
+		return str(self.id)
+
 class ReportSchedule(models.Model):
 	"""Defines ReportSchedule table (report_schedules in mysql database)"""
 	run_type = models.ForeignKey(RunType, on_delete = models.CASCADE)
 	timeframe_type = models.ForeignKey(TimeframeType, on_delete = models.CASCADE)
 	report_scope = models.ForeignKey(ReportScope, on_delete = models.CASCADE)
-	report_scope_value = models.CharField(max_length = 255, blank = True)
+	report_scope_value = models.PositiveIntegerField()
 	control_type = models.ForeignKey(ControlType, on_delete = models.CASCADE)
 	reporting_dictionary = models.ForeignKey(ReportingDictionary, on_delete = models.CASCADE)
 	control_age_group_id = models.IntegerField()
-	date_scheduled = models.DateField()
+	date_scheduled = models.DateField(default = datetime.date.today)
 	date_custom_start = models.DateField(null = True, blank = True)
 	date_custom_end = models.DateField(null = True, blank = True)
-	addin_state_report = models.ForeignKey(ReportingDictionary, related_name = 'addin_state', on_delete = models.CASCADE, null = True, blank = True)
-	addin_foodbank_report = models.ForeignKey(ReportingDictionary, related_name = 'addin_foodbank', on_delete = models.CASCADE, null = True, blank = True)
+	addin_reports = models.ManyToManyField(ReportScheduleAddin, through = 'ReportScheduleAddinReport', blank = True)
 	class Meta:
 		db_table = 'report_schedules'
+	def __str__(self):
+		return str(self.id)
+
+class ReportScheduleAddinReport(models.Model):
+	report_schedule = models.ForeignKey(ReportSchedule, on_delete=models.CASCADE)
+	report_schedule_addin = models.ForeignKey(ReportScheduleAddin, on_delete=models.CASCADE)
+	class Meta:
+		db_table = 'report_schedule_addin_reports'
 	def __str__(self):
 		return str(self.id)
 
