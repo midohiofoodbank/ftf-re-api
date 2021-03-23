@@ -1,4 +1,5 @@
 import numpy as np
+from print_dict.print_dict import print_dict
 from .services.data_service import Data_Service as ds
 import json
 
@@ -357,6 +358,49 @@ def __get_age_group_count(id, params):
     data = data.agg({'service_id': 'count'}).reset_index().rename(columns={'service_id':'Served'})
     return data.to_json()
 
+# slide 71
+def __get_age_group_and_gender_count(id, params):
+    """Calculate number of people served DataDef TBD (age group and gender count)
+
+    Arguments:
+    id - data definiton id
+    params - a dictionary of values to scope the queries
+
+    Modifies:
+    Nothing
+
+    Returns: age_group_gender_count
+    age_group_gender_count - number of people served, filtered by age groups and gender
+    """
+
+    def male_count(series):
+        count = 0
+        for val in series:
+            if val == 'M':
+                count += 1
+        return count
+    def female_count(series):
+        count = 0
+        for val in series:
+            if val == 'F':
+                count += 1
+        return count
+    def unknown_count(series):
+        count = 0
+        for val in series:
+            if val == 'N':
+                count += 1
+        return count
+
+    grouped = ds.get_data_for_definition(id, params).groupby(['age_band_name_dash'])
+    data = grouped.agg(
+        male= ('gender', male_count),
+        female= ('gender', female_count),
+        unknown= ('gender', unknown_count)
+    ).reset_index()
+
+    return data.to_json()
+
 # slide 73
 def __get_age_groups_at_least_one(id, params):
     return ds.get_data_for_definition(id,params).to_json()
@@ -398,5 +442,6 @@ data_calc_function_switcher = {
         30: __get_household_size_distribution_1_to_10,
         31: __get_household_size_distribution_classic,
         67: __get_age_group_count,
+        71: __get_age_group_and_gender_count,
         73: __get_age_groups_at_least_one
     }
