@@ -400,29 +400,29 @@ def __get_age_groups_at_least_one(id, params):
         has_senior_80_plus = False
 
         for age in ages:
-            if key >= 0 and key < 0.5:
+            if age < 1:
                 has_infant_0 = True
-            elif key >= 0.5 and key < 2.5:
+            elif age >= 1 and age <= 2:
                 has_toddler_1_2 = True
-            elif key >= 2.5 and key < 4.5:
+            elif age >= 3 and age <= 4:
                 has_preschooler_3_4 = True
-            elif key >= 4.5 and key < 12.5:
+            elif age >= 5 and age <= 12:
                 has_elementary_5_12 = True
-            elif key >= 12.5 and key < 17.5:
+            elif age >= 13 and age <= 17:
                 has_teenager_13_17 = True
-            elif key >= 17.5 and key < 19.5:
+            elif age >= 18 and age <= 19:
                 has_young_adult_18_19 = True
-            elif key >= 19.5 and key < 29.5:
+            elif age >= 20 and age <= 29:
                 has_twenties_20_29 = True
-            elif key >= 29.5 and key < 39.5:
+            elif age >= 30 and age <= 39:
                 has_thirties_30_39 = True
-            elif key >= 39.5 and key < 49.5:
+            elif age >= 40 and age <= 49:
                 has_fourties_40_49 = True
-            elif key >= 49.5 and key < 59.5:
+            elif age >= 50 and age <= 59:
                 has_fifties_50_59 = True
-            elif key >= 59.5 and key < 69.5:
+            elif age >= 60 and age <= 69:
                 has_senior_60_69 = True
-            elif key >= 69.5 and key < 79.5:
+            elif age >= 70 and age <= 79:
                 has_senior_70_79 = True
             else:
                 has_senior_80_plus = True
