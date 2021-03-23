@@ -1,4 +1,5 @@
 import numpy as np
+from print_dict.print_dict import print_dict
 from .services.data_service import Data_Service as ds
 import json
 
@@ -357,6 +358,49 @@ def __get_age_group_count(id, params):
     data = data.agg({'service_id': 'count'}).reset_index().rename(columns={'service_id':'Served'})
     return data.to_json()
 
+# slide 71
+def __get_age_group_and_gender_count(id, params):
+    """Calculate number of people served DataDef TBD (age group and gender count)
+
+    Arguments:
+    id - data definiton id
+    params - a dictionary of values to scope the queries
+
+    Modifies:
+    Nothing
+
+    Returns: age_group_gender_count
+    age_group_gender_count - number of people served, filtered by age groups and gender
+    """
+
+    def male_count(series):
+        count = 0
+        for val in series:
+            if val == 'M':
+                count += 1
+        return count
+    def female_count(series):
+        count = 0
+        for val in series:
+            if val == 'F':
+                count += 1
+        return count
+    def unknown_count(series):
+        count = 0
+        for val in series:
+            if val == 'N':
+                count += 1
+        return count
+
+    grouped = ds.get_data_for_definition(id, params).groupby(['age_band_name_dash'])
+    data = grouped.agg(
+        male= ('gender', male_count),
+        female= ('gender', female_count),
+        unknown= ('gender', unknown_count)
+    ).reset_index()
+
+    return data.to_json()
+
 # slide 73
 def __get_age_groups_at_least_one(id, params):
     data = ds.get_data_for_definition(id,params).groupby(['research_family_key'])
@@ -400,29 +444,29 @@ def __get_age_groups_at_least_one(id, params):
         has_senior_80_plus = False
 
         for age in ages:
-            if key >= 0 and key < 0.5:
+            if age < 1:
                 has_infant_0 = True
-            elif key >= 0.5 and key < 2.5:
+            elif age >= 1 and age <= 2:
                 has_toddler_1_2 = True
-            elif key >= 2.5 and key < 4.5:
+            elif age >= 3 and age <= 4:
                 has_preschooler_3_4 = True
-            elif key >= 4.5 and key < 12.5:
+            elif age >= 5 and age <= 12:
                 has_elementary_5_12 = True
-            elif key >= 12.5 and key < 17.5:
+            elif age >= 13 and age <= 17:
                 has_teenager_13_17 = True
-            elif key >= 17.5 and key < 19.5:
+            elif age >= 18 and age <= 19:
                 has_young_adult_18_19 = True
-            elif key >= 19.5 and key < 29.5:
+            elif age >= 20 and age <= 29:
                 has_twenties_20_29 = True
-            elif key >= 29.5 and key < 39.5:
+            elif age >= 30 and age <= 39:
                 has_thirties_30_39 = True
-            elif key >= 39.5 and key < 49.5:
+            elif age >= 40 and age <= 49:
                 has_fourties_40_49 = True
-            elif key >= 49.5 and key < 59.5:
+            elif age >= 50 and age <= 59:
                 has_fifties_50_59 = True
-            elif key >= 59.5 and key < 69.5:
+            elif age >= 60 and age <= 69:
                 has_senior_60_69 = True
-            elif key >= 69.5 and key < 79.5:
+            elif age >= 70 and age <= 79:
                 has_senior_70_79 = True
             else:
                 has_senior_80_plus = True
@@ -501,5 +545,6 @@ data_calc_function_switcher = {
         30: __get_household_size_distribution_1_to_10,
         31: __get_household_size_distribution_classic,
         67: __get_age_group_count,
+        71: __get_age_group_and_gender_count,
         73: __get_age_groups_at_least_one
     }
