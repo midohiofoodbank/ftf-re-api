@@ -637,8 +637,37 @@ def get_age_groups(request):
             {
                 "reportId":1,
                 "reportDictId":1,
+                "dataDefId":67,
+                "name": "age_groups",
+                "dataDefType":3
+            }
+        ]
+    }
+
+    start_time = time.time()
+    cd = CalculationDispatcher(input_dict)
+    cd.run_calculations()
+
+    context = { 'report_output': format_dict(cd.request)}
+    print(str(time.time() - start_time), ' seconds to run query')
+    return render(request, 'transformapi/get-report.html', context)
+
+def get_age_groups_at_least_one(request):
+    input_dict = {
+        "Scope": {
+            "startDate":"01/01/2020",
+            "endDate":"01/31/2020",
+            "scope_field":"fb_id",
+            "scope_field_value":21,
+            "control_type_name":"Is Grocery Service",
+            "age_grouping_id":1 # using age_grouping_id to use to subset dim_ages
+        },
+        "ReportInfo": [
+            {
+                "reportId":1,
+                "reportDictId":1,
                 "dataDefId":73,
-                "name": "age_groups_at_least_one",
+                "name": "age_group_count",
                 "dataDefType":3
             }
         ]
