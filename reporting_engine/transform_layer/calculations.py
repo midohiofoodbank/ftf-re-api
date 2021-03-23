@@ -339,7 +339,7 @@ def __get_household_size_distribution_classic(id, params):
 
     return json.dumps(return_dict)
 
-# slide 67
+# originally slide 67
 def __get_age_group_count(id, params):
     """Calculate number of people served DataDef TBD (age group count)
 
@@ -403,7 +403,102 @@ def __get_age_group_and_gender_count(id, params):
 
 # slide 73
 def __get_age_groups_at_least_one(id, params):
-    return ds.get_data_for_definition(id,params).to_json()
+    data = ds.get_data_for_definition(id,params).groupby(['research_family_key'])
+
+    return_dict = {
+        'has_infant_0':0,
+        'has_toddler_1_2':0,
+        'has_preschooler_3_4':0,
+        'has_elementary_5_12':0,
+        'has_teenager_13_17':0,
+        'has_young_adult_18_19':0,
+        'has_twenties_20_29':0,
+        'has_thirties_30_39':0,
+        'has_fourties_40_49':0,
+        'has_fifties_50_59':0,
+        'has_senior_60_69':0,
+        'has_senior_70_79':0,
+        'has_senior_80_plus':0
+    }
+
+    for key,value in data:
+        family_dict = data.get_group(key).to_dict()
+        age_section = family_dict['current_age']
+
+        ages = list()
+        for key in age_section:
+            ages.append(age_section[key])
+
+        has_infant_0 = False
+        has_toddler_1_2 = False
+        has_preschooler_3_4 = False
+        has_elementary_5_12 = False
+        has_teenager_13_17 = False
+        has_young_adult_18_19 = False
+        has_twenties_20_29 = False
+        has_thirties_30_39 = False
+        has_fourties_40_49 = False
+        has_fifties_50_59 = False
+        has_senior_60_69 = False
+        has_senior_70_79 = False
+        has_senior_80_plus = False
+
+        for age in ages:
+            if age < 1:
+                has_infant_0 = True
+            elif age >= 1 and age <= 2:
+                has_toddler_1_2 = True
+            elif age >= 3 and age <= 4:
+                has_preschooler_3_4 = True
+            elif age >= 5 and age <= 12:
+                has_elementary_5_12 = True
+            elif age >= 13 and age <= 17:
+                has_teenager_13_17 = True
+            elif age >= 18 and age <= 19:
+                has_young_adult_18_19 = True
+            elif age >= 20 and age <= 29:
+                has_twenties_20_29 = True
+            elif age >= 30 and age <= 39:
+                has_thirties_30_39 = True
+            elif age >= 40 and age <= 49:
+                has_fourties_40_49 = True
+            elif age >= 50 and age <= 59:
+                has_fifties_50_59 = True
+            elif age >= 60 and age <= 69:
+                has_senior_60_69 = True
+            elif age >= 70 and age <= 79:
+                has_senior_70_79 = True
+            else:
+                has_senior_80_plus = True
+        
+        if has_infant_0 == True:
+            return_dict['has_infant_0']+=1
+        if has_toddler_1_2 == True:
+            return_dict['has_toddler_1_2']+=1
+        if has_preschooler_3_4 == True:
+            return_dict['has_preschooler_3_4']+=1
+        if has_elementary_5_12 == True:
+            return_dict['has_elementary_5_12']+=1
+        if has_teenager_13_17 == True:
+            return_dict['has_teenager_13_17']+=1
+        if has_young_adult_18_19 == True:
+            return_dict['has_young_adult_18_19']+=1
+        if has_twenties_20_29 == True:
+            return_dict['has_twenties_20_29']+=1
+        if has_thirties_30_39 == True:
+            return_dict['has_thirties_30_39']+=1
+        if has_fourties_40_49 == True:
+            return_dict['has_fourties_40_49']+=1
+        if has_fifties_50_59 == True:
+            return_dict['has_fifties_50_59']+=1
+        if has_senior_60_69 == True:
+            return_dict['has_senior_60_69']+=1
+        if has_senior_70_79 == True:
+            return_dict['has_senior_70_79']+=1
+        if has_senior_80_plus == True:
+            return_dict['has_senior_80_plus']+=1
+
+    return json.dumps(return_dict)
 
 ## Data Defintion Switcher
 # usage:
