@@ -426,7 +426,13 @@ class Data_Service:
     def __get_household_composition(params):
         return Data_Service.family_services(params)
 
-    ## DataFrame to fulfill Slide 67, 71, 73
+    ## DataFrame to fulfill Slide 67
+    ####    Returns age_services
+    @staticmethod
+    def __get_undup_age_group_count(params):
+        return Data_Service.age_services(params).drop_duplicates(subset = 'research_service_key', inplace = False)
+    
+    ## DataFrame to fulfill Slide 71, 73
     ####    Returns age_services
     @staticmethod
     def __get_age_group_count(params):
@@ -473,7 +479,7 @@ class Data_Service:
             29: __get_household_composition.__func__,
             30: __get_household_composition.__func__,
             31: __get_household_composition.__func__,
-            67: __get_age_group_count.__func__,
+            67: __get_undup_age_group_count.__func__,
             71: __get_age_group_count.__func__,
             73: __get_age_group_count.__func__
         }

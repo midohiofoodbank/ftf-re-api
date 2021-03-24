@@ -14,6 +14,5 @@ urlpatterns = [
     path('demo1/mofc', views.get_demo1_mofc, name='get-demo1-mofc'),
     path('demo2/def3-large', views.test_data_def_3_large, name = 'test-data-def-3-large'),
     path('demo2/def3-typical', views.test_data_def_3_typical, name = 'test-data-def-3-typical'),
-    path('get-age-groups', views.get_age_groups, name='get-age-groups'),
-    path('get-age-groups-at-least-one', views.get_age_groups_at_least_one, name='get-age-groups-at-least-one')
+    path('get-age-groups', views.get_age_groups, name='get-age-groups')
 ]
