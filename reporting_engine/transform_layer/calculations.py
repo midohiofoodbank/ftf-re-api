@@ -504,10 +504,8 @@ def __get_age_groups_at_least_one(id, params):
     return json.dumps(return_dict)
 
 # slide 76 
-def __get_gender_disparity_male_total(id, params):
+def __get_gender_disparity(id, params):
     
-    #i don't know whether i did the percentages and disparities right
-    #TODO test
     def male_count(series):
         count = 0
         for val in series:
@@ -544,10 +542,7 @@ def __get_gender_disparity_male_total(id, params):
 
 
     return data.to_json()
-def __get_gender_disparity_female_total(self):
-    pass
-def __get_gender_disparity_male_v_female(self):
-    pass
+
 
 ## Data Defintion Switcher
 # usage:
@@ -588,5 +583,5 @@ data_calc_function_switcher = {
         67: __get_age_group_count,
         71: __get_age_group_and_gender_count,
         73: __get_age_groups_at_least_one,
-        76: __get_gender_disparity_male_total
+        76: __get_gender_disparity
     }
