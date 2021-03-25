@@ -641,6 +641,13 @@ def get_age_groups(request):
                 "name": "age_group_and_gender_count",
                 "dataDefType":3
             },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":76,
+                "name": "gender_disparity_male_total",
+                "dataDefType":3
+            }
         ]
     }
 

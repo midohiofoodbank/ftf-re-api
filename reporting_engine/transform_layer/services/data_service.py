@@ -532,5 +532,6 @@ class Data_Service:
             31: __get_household_composition.__func__,
             67: __get_age_group_count.__func__,
             71: __get_age_group_count.__func__,
-            73: __get_age_group_count.__func__
+            73: __get_age_group_count.__func__,
+            76: __get_age_group_count.__func__,
         }
