@@ -638,6 +638,13 @@ def get_age_groups(request):
                 "reportId":1,
                 "reportDictId":1,
                 "dataDefId":71,
+                "name": "gender_count",
+                "dataDefType":3
+            },
+            {
+                "reportId":1,
+                "reportDictId":1,
+                "dataDefId":75,
                 "name": "age_group_and_gender_count",
                 "dataDefType":3
             },

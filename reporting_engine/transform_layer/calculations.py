@@ -358,7 +358,33 @@ def __get_age_group_count(id, params):
     data = data.agg({'service_id': 'count'}).reset_index().rename(columns={'service_id':'Served'})
     return data.to_json()
 
-# slide 71
+
+# Slide 71
+def __get_gender_count(id, params):
+     """Calculate percentage of people served by gender
+
+    Arguments:
+    id - data definiton id
+    params - a dictionary of values to scope the queries
+
+    Modifies:
+    Nothing
+
+    Returns: gender_count
+    gender_count - number and percentage of people served, sorted by gender
+
+    """
+
+
+         
+
+
+     data = ds.get_data_for_definition(id,params).groupby(['gender'])
+     data = data.agg({'gender': 'count'})
+     return data.to_json()
+
+
+# currently slide 75, was 71
 def __get_age_group_and_gender_count(id, params):
     """Calculate number of people served DataDef TBD (age group and gender count)
 
@@ -537,6 +563,7 @@ data_calc_function_switcher = {
         30: __get_household_size_distribution_1_to_10,
         31: __get_household_size_distribution_classic,
         67: __get_age_group_count,
-        71: __get_age_group_and_gender_count,
-        73: __get_age_groups_at_least_one
+        71: __get_gender_count,
+        73: __get_age_groups_at_least_one,
+        75: __get_age_group_and_gender_count
     }
