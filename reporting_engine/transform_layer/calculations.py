@@ -4,6 +4,7 @@ from .services.data_service import Data_Service as ds
 import json
 
 import numpy
+import pandas
 
 
 BIG_NUM_NAMES = ["services_total", "undup_hh_total", "undup_indv_total", "services_per_uhh_avg"]
@@ -427,6 +428,8 @@ def __get_age_group_and_gender_count(id, params):
 
     return data.to_json()
 
+
+
 # slide 73
 def __get_age_groups_at_least_one(id, params):
     data = ds.get_data_for_definition(id,params).groupby(['research_family_key'])
@@ -526,6 +529,47 @@ def __get_age_groups_at_least_one(id, params):
 
     return json.dumps(return_dict)
 
+# slide 76 
+def __get_gender_disparity(id, params):
+    
+    def male_count(series):
+        count = 0
+        for val in series:
+            if val == 'M':
+                count += 1
+        return count
+    def female_count(series):
+        count = 0
+        for val in series:
+            if val == 'F':
+                count += 1
+        return count
+
+    ages = ds.get_data_for_definition(id, params).drop_duplicates(subset = 'research_member_key', inplace = False)
+    total_individuals = len(ages)
+    ages = ages.groupby(['age_band_name_dash'])
+    data = ages.agg(
+        male= ('gender', male_count),              #men in the age group
+        female= ('gender', female_count),          #women in the age group
+        total = ('research_member_key', 'count')   #total individuals
+    )
+    data["male_v_female"] = data['male'] - data['female']
+
+    total_females = data['female'].sum()
+    total_males = data['male'].sum()
+    data["percent_total_males"] = data["male"] / total_males
+    data["percent_total_females"] = data["female"] / total_females
+    data["percent_total_pop"] = data["total"] / total_individuals
+    data["m_v_f_percent"] = data['percent_total_males'] - data['percent_total_females']
+    data["male_disparity"] = data["percent_total_males"] -data["percent_total_pop"]
+    data["female_disparity"] = data["percent_total_females"] -data["percent_total_pop"]
+    
+    #disparity of males vs females
+
+
+    return data.to_json()
+
+
 ## Data Defintion Switcher
 # usage:
 #   func = data_calc_function_switcher.get(id)
@@ -563,7 +607,7 @@ data_calc_function_switcher = {
         30: __get_household_size_distribution_1_to_10,
         31: __get_household_size_distribution_classic,
         67: __get_age_group_count,
-        71: __get_gender_count,
+        71: __get_age_group_and_gender_count,
         73: __get_age_groups_at_least_one,
-        75: __get_age_group_and_gender_count
+        76: __get_gender_disparity
     }

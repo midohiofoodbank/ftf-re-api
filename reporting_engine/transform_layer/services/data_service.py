@@ -64,6 +64,7 @@ class Data_Service:
         if cls.__age_services is None:
             cls.__age_services = cls.__get_age_services(params)
         return cls.__age_services
+        
     __family_services:DataFrame = None
     ## getter and setter for __family_services
     @classmethod
@@ -297,6 +298,57 @@ class Data_Service:
         else:
             return f"dim_service_types.dummy_is_grocery_service = 1"
 
+
+    @classmethod
+    def __get_families(cls,params):
+        conn = connections['source_db']
+
+        table1 = ""
+        left1 = right1 = ""
+
+        if params["scope_type"] == "hierarchy":
+            table1 = "dim_hierarchies"
+            left1 = right1 = "hierarchy_id"
+        elif params["scope_type"] == "geography":
+            table1 = "dim_geos"
+            left1 = "dimgeo_id"
+            right1 = "id"
+
+        control_type_field = params["control_type_field"]
+        control_type_value = params["control_type_value"]
+        scope_field = params["scope_field"]
+        scope_value = params["scope_field_value"]
+        start_date = cls.__date_str_to_int(params["startDate"])
+        end_date = cls.__date_str_to_int(params["endDate"])
+
+        query = f"""
+        SELECT
+            COUNT(fs.research_family_key) AS num_visits,
+            fs.research_family_key,
+            fs.served_children,
+            fs.served_adults,
+            fs.served_seniors,
+            fs.served_total,
+            comps.family_composition_type
+        FROM 
+            fact_services AS fs
+            LEFT JOIN {table1} AS t1 ON fs.{left1} = t1.{right1}
+            LEFT JOIN dim_families AS df ON fs.research_family_key = df.research_family_key
+            INNER JOIN dim_family_compositions as comps ON df.family_composition_type = comps.id
+            INNER JOIN dim_service_types as dt ON fs.service_id = dt.id
+        WHERE
+            fs.service_status = 17 AND
+            t1.{scope_field} = {scope_value} AND
+            fs.date >= {start_date} AND fs.date <= {end_date}
+            AND dt.{control_type_field} = {control_type_value}
+        GROUP BY fs.research_family_key
+        """
+
+
+        services = pd.read_sql(query, conn)
+        return services
+
+
     @staticmethod
     def __date_str_to_int(date):
         dt = parser.parse(date,dayfirst = False)
@@ -426,11 +478,26 @@ class Data_Service:
     def __get_household_composition(params):
         return Data_Service.family_services(params)
 
-    ## DataFrame to fulfill Slide 67, 71, 73,75
+    ## DataFrame to fulfill Slide 67
+    ####    Returns age_services
+    @staticmethod
+    def __get_undup_age_group_count(params):
+        return Data_Service.age_services(params).drop_duplicates(subset = 'research_service_key', inplace = False)
+    
+    ## DataFrame to fulfill Slide 71, 73
     ####    Returns age_services
     @staticmethod
     def __get_age_group_count(params):
         return Data_Service.age_services(params)
+
+    #TODO better comment
+    ## DataFrame to fulfill Slide 47: family household composition
+    ####    Returns families
+    @staticmethod
+    def __get_family_household_comp(params):
+        conn = connections['source_db']
+        families = Data_Service.__get_families(params)
+        return families
 
     ## error, none
     @staticmethod
@@ -473,8 +540,8 @@ class Data_Service:
             29: __get_household_composition.__func__,
             30: __get_household_composition.__func__,
             31: __get_household_composition.__func__,
-            67: __get_age_group_count.__func__,
+            67: __get_undup_age_group_count.__func__,
             71: __get_age_group_count.__func__,
             73: __get_age_group_count.__func__,
-            75: __get_age_group_count.__func__
+            76: __get_age_group_count.__func__
         }
