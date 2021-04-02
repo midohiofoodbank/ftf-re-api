@@ -543,5 +543,6 @@ class Data_Service:
             67: __get_undup_age_group_count.__func__,
             71: __get_age_group_count.__func__,
             73: __get_age_group_count.__func__,
+            75: __get_age_group_count.__func__,
             76: __get_age_group_count.__func__
         }

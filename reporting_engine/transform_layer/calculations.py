@@ -382,6 +382,14 @@ def __get_gender_count(id, params):
 
      data = ds.get_data_for_definition(id,params).groupby(['gender'])
      data = data.agg({'gender': 'count'})
+     otherCount = data.iat[0,0]
+     femaleCount = data.iat[1,0]
+     maleCount = data.iat[2,0]
+     naCount = data.iat[3,0]
+     mCount = data.iat[4,0]
+     length = otherCount + femaleCount +maleCount +naCount+mCount
+     percentages = [(otherCount/length)*100, (femaleCount/length)*100, (maleCount/length)*100, (naCount/length)*100, (mCount/length)*100]
+     data['Percentages'] = percentages
      return data.to_json()
 
 
@@ -607,7 +615,8 @@ data_calc_function_switcher = {
         30: __get_household_size_distribution_1_to_10,
         31: __get_household_size_distribution_classic,
         67: __get_age_group_count,
-        71: __get_age_group_and_gender_count,
+        71: __get_gender_count,
         73: __get_age_groups_at_least_one,
+        75: __get_age_group_and_gender_count,
         76: __get_gender_disparity
     }
