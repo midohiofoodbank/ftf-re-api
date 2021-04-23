@@ -1039,7 +1039,27 @@ def get_family_members(request):
                 "name":"demo_indv_military",
                 "dataDefType":"type2"
             },
-            
+            {
+                "reportScheduleId":1,
+                "reportDictId":1,
+                "dataDefId":79,
+                "name":"demo_indv_education",
+                "dataDefType":"type2"
+            },
+            {
+                "reportScheduleId":1,
+                "reportDictId":1,
+                "dataDefId":80,
+                "name":"demo_indv_employment",
+                "dataDefType":"type2"
+            },
+            {
+                "reportScheduleId":1,
+                "reportDictId":1,
+                "dataDefId":81,
+                "name":"demo_indv_health_insurance",
+                "dataDefType":"type2"
+            }
         ]
     }   
 
